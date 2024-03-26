@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const router = express.Router();
 const mongoose = require('mongoose');
 const passport = require('passport');
@@ -97,17 +96,7 @@ app.get('/register', (req, res) => {
 //     res.status(500).json({ error: 'Error in registration.' });
 //   }
 // });
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'C:\\Users\\mp848\\OneDrive\\Рабочий стол\\work\\crm\\crm-without-node-moduls\\uploads');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.originalname);
-  }
-});
 
-const upload = multer({ storage: storage });
-// , upload.single('photo')
 
 app.post('/api/register/manager', async (req, res) => {
   const { nameManager, email, password, role, managerKey } = req.body;

@@ -1,0 +1,798 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication Demo</title>
+</head>
+<body>
+  <h1>Authentication</h1>
+  
+  <!-- Registration Form -->
+  <h2>Registration</h2>
+  <form id="registerForm" action="/api/register" method="post">
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+    
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    
+    <label for="role">Role:</label>
+    <select id="role" name="role">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+
+    <button type="submit">Register</button>
+  </form>
+
+  <!-- Login Form -->
+  <h2>Login</h2>
+  <form id="loginForm" action="/login" method="post">
+    <label for="loginEmail">Email:</label>
+    <input type="email" id="loginEmail" name="email" required>
+    
+    <label for="loginPassword">Password:</label>
+    <input type="password" id="loginPassword" name="password" required>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams(formData),
+        });
+
+        if (response.ok) {
+          alert('Registration successful. ');
+        } else {
+          alert('Registration failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error during registration:', error);
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+
+      const formData = new FormData(this);
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams(formData),
+        });
+
+        if (response.ok) {
+          window.location.href = '/dashboard';
+        } else {
+          alert('Login failed. Please check your credentials and try again.');
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+      }
+    });
+  </script>
+</body>
+</html>
+import 'date-fns';
+import React from 'react';
+import Grid from '@material-ui/core/Grid';
+import DateFnsUtils from '@date-io/date-fns';
+import {
+  MuiPickersUtilsProvider,
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
+
+export default function MaterialUIPickers() {
+  // The first commit of Material-UI
+  const [selectedDate, setSelectedDate] = React.useState(new Date('2014-08-18T21:11:54'));
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  return (
+    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+      <Grid container justifyContent="space-around">
+        <KeyboardDatePicker
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          id="date-picker-inline"
+          label="Date picker inline"
+          value={selectedDate}
+          onChange={handleDateChange}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+        <KeyboardDatePicker
+          margin="normal"
+          id="date-picker-dialog"
+          label="Date picker dialog"
+          format="MM/dd/yyyy"
+          value={selectedDate}
+          onChange={handleDateChange}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+        <KeyboardTimePicker
+          margin="normal"
+          id="time-picker"
+          label="Time picker"
+          value={selectedDate}
+          onChange={handleDateChange}
+          KeyboardButtonProps={{
+            'aria-label': 'change time',
+          }}
+        />
+      </Grid>
+    </MuiPickersUtilsProvider>
+  );
+}
+const dragOverHandler = (e) => { 
+  e.preventDefault();
+  if (e.target.className === "statusColsElement") {
+    e.target.style.boxShadow = "0 4px 3px gray";
+  }
+};
+
+const dragLeaveHandler = (e) => {
+  if (e.target.className === "statusColsElement") {
+    e.target.style.boxShadow = "none";
+  }
+};
+
+const dragStartHandler = (e, board, item) => {
+  setCurrentBoard(board)
+  setCurrentItem(item)
+ }
+
+const dragEndHandler = (e) => {
+  e.target.style.boxShadow = "none"
+ }
+
+ const dropHandler = (e, board, item) => { 
+  e.preventDefault();
+  const currentID = currentBoard.items.indexOf(currentItem);
+  currentBoard.items.splice(currentID, 1);
+
+  const dropID = board.items.indexOf(item);
+  board.items.splice(dropID + 1, 0, currentItem);
+  // Вместо этого:
+  // setMyDataLeed(myDataLeed.map(b => {
+  //   if(b._id === board._id){
+  //     return board
+  //   }
+
+  //   if(b._id === currentBoard._id){
+  //     return currentBoard
+  //   }
+  //   return b
+  // }));
+
+  // Вы можете сделать следующее:
+  const updatedData = myDataLeed.map(b => {
+    if (b._id === board._id) {
+      return board;
+    }
+
+    if (b._id === currentBoard._id) {
+      return currentBoard;
+    }
+    return b;
+  });
+
+  setMyDataLeed(updatedData);
+};
+
+
+app.post('/api/register/manager', async (req, res) => {
+  const { nameManager, email, password, role, managerKey } = req.body;
+
+  try {
+    const manager = new Manager({ nameManager, email, password, role, managerKey });
+
+    // Убеждаемся, что для роли "manager" генерируется managerKey
+    if (role === 'manager') {
+      manager.managerKey = managerKey;
+    }
+    console.log(nameManager, email, password, role, managerKey)
+    await manager.save();
+    res.status(201).json({ message: 'Manager registered successfully.' });
+  } catch (err) {
+    console.error('Error during manager registration:', err);
+    res.status(500).json({ error: 'Error in registration.' });
+  }
+});
+
+app.post('/api/register/client', async (req, res) => {
+  const { email, phone, role, managerID, managerKey, status, product, payment, selectedDate, dateOfCreated, clientName, secondPhone } = req.body;
+
+  try {
+    const client = new Client({ email, phone, role, managerID, managerKey, status, product, payment, selectedDate, dateOfCreated, clientName, secondPhone });
+    client.managerID = managerID;
+    client.managerKey = managerKey;
+    await client.save();
+    res.status(201).json({ message: 'Manager registered successfully.' });
+  } catch (err) {
+    console.error('Error during manager registration:', err);
+    res.status(500).json({ error: 'Error in registration.' });
+  }
+});
+
+app.post('/api/register/buyer', async (req, res) => {
+  const { email, phone, notice, name, role, managerID, managerKey, adminKey } = req.body;
+
+  try {
+    const buyer = new Buyer({ email, phone, notice, name, role, managerID, managerKey, adminKey });
+    buyer.managerID = managerID;
+    buyer.managerKey = managerKey;
+    await buyer.save();
+    res.status(201).json({ message: 'Manager registered successfully.' });
+  } catch (err) {
+    console.error('Error during manager registration:', err);
+    res.status(500).json({ error: 'Error in registration.' });
+  }
+});
+
+app.post('/api/register/product', async (req, res) => {
+  const { name, cost, count } = req.body;
+
+  try {
+    const product = new Product({ name, cost, count });
+    await product.save();
+    res.status(201).json({ message: 'Manager registered successfully.' });
+  } catch (err) {
+    console.error('Error during manager registration:', err);
+    res.status(500).json({ error: 'Error in registration.' });
+  }
+});
+
+app.post('/api/register/notice', async (req, res) => {
+  const { noticeID, content, noticeDate } = req.body;
+  console.log(content)
+  try {
+    const product = new Notice({ noticeID, content, noticeDate });
+    await product.save();
+    res.status(201).json({ message: 'Manager registered successfully.' });
+  } catch (err) {
+    console.error('Error during manager registration:', err);
+    res.status(500).json({ error: 'Error in registration.' });
+  }
+});
+
+app.post('/api/register/task', async (req, res) => {
+  const { taskLine, startDate, endDate, createdDate, taskStatus, managerID, managerKey } = req.body;
+
+  try {
+    const task = new Task({ taskLine, startDate, endDate, createdDate, taskStatus, managerID, managerKey });
+    await task.save();
+    res.status(201).json({ message: 'Manager registered successfully.' });
+  } catch (err) {
+    console.error('Error during manager registration:', err);
+    res.status(500).json({ error: 'Error in registration.' });
+  }
+});
+
+app.get('/login', (req, res) => {
+  res.send('Login Page');
+});
+
+app.post('/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/login',
+  failureFlash: true
+}));
+
+// Добавить обработчик к существующему коду вашего сервера
+app.post('/api/getAdminKey', isAuthenticated, async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await Manager.findOne({ email });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Проверяем, совпадает ли пароль
+    if (password !== user.password) {
+      res.status(401).json({ error: 'Incorrect password' });
+      return;
+    }
+
+    // Если роль пользователя - администратор, возвращаем adminKey
+    if (user.role === 'admin') {
+      res.json({ adminKey: user.adminKey });
+    } else {
+      res.status(403).json({ error: 'User is not an admin' });
+    }
+  } catch (error) {
+    console.error('Error while fetching adminKey:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+app.get('/', (req, res) => {
+  const { email } = req.query;
+  if (req.isAuthenticated()) {
+    if (req.user.role === 'admin') {
+      res.redirect('/admin/dashboard/email');
+    } else {
+      res.redirect('/dashboard');
+    }
+  } else {
+    res.send('Home Page');
+  }
+});
+////////////////////////////////////////////////////////////////
+app.get('/api/userRole', async (req, res) => {
+  const { email } = req.query;
+
+  try {
+    const user = await Manager.findOne({ email });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json({ role: user.role, key: user.adminKey, manID: user.managerID, manKey: user.managerKey, email: user.email });
+    // res.json({adminKey: user.adminKey})
+  } catch (error) {
+    console.error('Error while fetching user role:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+////////////////////////////////////////////////////////////////
+app.get('/dashboard', isAuthenticated, (req, res) => {
+  res.send(`Welcome, ${req.user.email}!`);
+});
+
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+function isAdminAuthenticated(req, res, next) {
+  if (req.isAuthenticated() && req.user.role === 'admin') {
+    return next();
+  }
+  res.redirect('/login');
+}
+// Маршрут для получения списка пользователей с определенным adminKey
+// Серверный код
+app.get('/api/usersByAdminKey', async (req, res) => {
+  try {
+    const managerKey = req.query.adminKey; // Получаем из параметра запроса
+    const users = await Manager.find({ managerKey }).exec();
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+app.get('/api/getClients', async (req, res) => {
+  try {
+    const clientEmail = req.query._id;
+    const limit = req.query.limit || 10;
+    const status = req.query.status || ''; // Добавляем параметр status
+
+    let query = { clientEmail };
+
+    // Если есть параметр status, добавляем его в запрос
+    if (status) {
+      query = { ...query, status };
+    }
+
+    // Добавляем сортировку, чтобы получить последнюю запись первой
+    const users = await Client.find(query)
+      .sort({ dateOfCreated: -1 }) // Предполагается, что в вашей модели есть поле dateOfCreated
+      .limit(parseInt(limit))
+      .exec();
+
+    res.json(users);
+  } catch (err) {
+    console.error('Ошибка при получении пользователей:', err);
+    res.status(500).send('Внутренняя ошибка сервера');
+  }
+});
+
+app.get('/api/getAllClients', async (req, res) => {
+  try {
+    const clientEmail = req.query._id;
+    const limit = req.query.limit || 10000;
+    const status = req.query.status || ''; // Добавляем параметр status
+
+    let query = { clientEmail };
+
+    // Если есть параметр status, добавляем его в запрос
+    if (status) {
+      query = { ...query, status };
+    }
+
+    // Добавляем сортировку, чтобы получить последнюю запись первой
+    const users = await Client.find(query)
+      .sort({ dateOfCreated: -1 }) // Предполагается, что в вашей модели есть поле dateOfCreated
+      .limit(parseInt(limit))
+      .exec();
+
+    res.json(users);
+  } catch (err) {
+    console.error('Ошибка при получении пользователей:', err);
+    res.status(500).send('Внутренняя ошибка сервера');
+  }
+});
+
+app.get('/api/getCloseClients', async (req, res) => {
+  try {
+    const clientEmail = req.query._id;
+    const users = await CloseClient.find({ clientEmail }).exec();
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).send('Internal Server Error');
+  }
+})
+app.get('/api/getManagers', async (req, res) => {
+  try {
+    const clientEmail = req.query.email; // Получаем из параметра запроса
+    const users = await Manager.find({ clientEmail }).exec();
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).send('Internal Server Error');
+  }
+})
+app.get('/api/getBuyers', async (req, res) => {
+  try {
+    const clientEmail = req.query.email; // Получаем из параметра запроса
+    const users = await Buyer.find({ clientEmail }).exec();
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).send('Internal Server Error');
+  }
+})
+
+app.get('/api/getProducts', async (req, res) => {
+
+
+  try {
+    const productId = req.query.name;
+    const product = await Product.find({ productId }).exec();;
+
+    res.json(product);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.get('/api/getNotices', async (req, res) => {
+
+
+  try {
+    const productId = req.query.noticeID;
+    const product = await Notice.find({ productId }).exec();;
+
+    res.json(product);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.get('/api/getTasks', async (req, res) => {
+
+
+  try {
+    const taskId = req.query._id;
+    const task = await Task.find({ taskId }).exec();;
+
+    res.json(task);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Получение данных менеджера по идентификатору
+app.get('/api/getManagerData', async (req, res) => {
+
+
+  try {
+    const managerId = req.query._id;
+    const manager = await Manager.findById(managerId).exec();
+
+    // if (!manager) {
+    //   res.status(404).json({ error: 'Менеджер не найден' });
+    //   return;
+    // }
+
+    res.json(manager);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Обновление данных менеджера
+app.put('/api/updateManagerData', async (req, res) => {
+  const managerId = req.body._id;
+  const email = req.body.email;
+  const name = req.body.nameManager;
+
+  const password = req.body.password;
+  const updatedData = req.body;
+
+
+  try {
+    const manager = await Manager.findByIdAndUpdate(managerId, { name: name, email: email, password: password }, { new: true });
+
+    if (!manager) {
+      res.status(404).json({ error: 'Менеджер не найден' });
+      return;
+    }
+
+    res.json({ message: 'Данные менеджера успешно обновлены', updatedManager: manager });
+  } catch (error) {
+    console.error('Ошибка при обновлении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.get('/api/getClientData', async (req, res) => {
+
+
+  try {
+    const clientId = req.query._id;
+    const client = await Client.findById(clientId).exec();
+
+    // if (!manager) {
+    //   res.status(404).json({ error: 'Менеджер не найден' });
+    //   return;
+    // }
+
+    res.json(client);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.get('/api/getBuyerData', async (req, res) => {
+
+
+  try {
+    const clientId = req.query._id;
+    const client = await Buyer.findById(clientId).exec();
+    res.json(client);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.get('/api/getProductData', async (req, res) => {
+
+  try {
+    const productId = req.query._id;
+    const product = await Product.findById(productId).exec();
+    res.json(product);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.get('/api/getTaskData', async (req, res) => {
+
+  try {
+    const productId = req.query._id;
+    const product = await Task.findById(productId).exec();
+    res.json(product);
+  } catch (error) {
+    console.error('Ошибка при получении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.put('/api/updateClientData', async (req, res) => {
+  const managerId = req.body._id;
+  const email = req.body.email;
+  const phone = req.body.phone;
+  const managerID = req.body.managerID
+  const status = req.body.status
+  const product = req.body.product
+  const clientName = req.body.clientName
+  const payment = req.body.payment
+  const selectedDate = req.body.selectedDate
+  const secondPhone = req.body.secondPhone
+
+  try {
+    const client = await Client.findByIdAndUpdate(managerId, { secondPhone: secondPhone, selectedDate: selectedDate, payment: payment, email: email, phone: phone, managerID: managerID, status: status, product: product, clientName: clientName }, { new: true });
+
+    if (!client) {
+      res.status(404).json({ error: 'Менеджер не найден' });
+      return;
+    }
+
+    res.json({ message: 'Данные менеджера успешно обновлены', updatedManager: client });
+  } catch (error) {
+    console.error('Ошибка при обновлении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.put('/api/updateBuyerData', async (req, res) => {
+  const buyerId = req.body._id;
+  const name = req.body.name
+  const email = req.body.email;
+  const phone = req.body.phone;
+  const notice = req.body.notice;
+  const managerID = req.body.managerID;
+
+
+  try {
+    const client = await Buyer.findByIdAndUpdate(buyerId, { email: email, phone: phone, managerID: managerID, name: name, notice: notice }, { new: true });
+
+    if (!client) {
+      res.status(404).json({ error: 'Менеджер не найден' });
+      return;
+    }
+
+    res.json({ message: 'Данные менеджера успешно обновлены', updatedManager: client });
+  } catch (error) {
+    console.error('Ошибка при обновлении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.put('/api/updateProductData', async (req, res) => {
+  const productID = req.body._id
+  const name = req.body.name
+  const cost = req.body.cost
+  const count = req.body.count
+
+
+  try {
+    const product = await Product.findByIdAndUpdate(productID, { name: name, cost: cost, count: count }, { new: true });
+
+    if (!product) {
+      res.status(404).json({ error: 'Менеджер не найден' });
+      return;
+    }
+
+    res.json({ message: 'Данные менеджера успешно обновлены', updatedManager: product });
+  } catch (error) {
+    console.error('Ошибка при обновлении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.put('/api/updateTaskStatus', async (req, res) => {
+  const taskID = req.body._id
+  const status = req.body.taskStatus
+  console.log(status)
+
+  try {
+    const product = await Task.findByIdAndUpdate(taskID, { taskStatus: status }, { new: true });
+
+    if (!product) {
+      res.status(404).json({ error: 'Менеджер не найден' });
+      return;
+    }
+
+    res.json({ message: 'Данные менеджера успешно обновлены', updatedManager: product });
+  } catch (error) {
+    console.error('Ошибка при обновлении данных менеджера:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.delete('/api/deleteClient', async (req, res) => {
+  const clientId = req.body._id; // Извлекаем идентификатор клиента из тела запроса
+  console.log(clientId); // Проверяем, что идентификатор успешно извлечен
+
+  try {
+    // Используйте метод findByIdAndDelete для удаления клиента по идентификатору
+    const deletedClient = await Client.findByIdAndDelete(clientId);
+
+    if (!deletedClient) {
+      res.status(404).json({ error: 'Клиент не найден' });
+      return;
+    }
+
+    // Создайте новый экземпляр Buyer с данными из удаленного клиента
+    const buyerData = {
+      email: deletedClient.email,
+      phone: deletedClient.phone,
+      clientName: deletedClient.clientName,
+      role: deletedClient.role,
+      managerID: deletedClient.managerID,
+      managerKey: deletedClient.managerKey,
+      status: deletedClient.status,
+      product: deletedClient.product,
+      payment: deletedClient.payment,
+      selectedDate: deletedClient.selectedDate,
+      dateOfCreated: deletedClient.selectedDate
+    };
+
+    const buyer = new CloseClient(buyerData);
+    buyer.save();
+
+    res.json({ message: 'Клиент успешно удален и добавлен в Buyer', deletedClient, newBuyer: buyer });
+  } catch (error) {
+    console.error('Ошибка при удалении клиента и добавлении в Buyer:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.delete('/api/deleteBuyer', async (req, res) => {
+  const clientId = req.body._id; // Извлекаем идентификатор клиента из тела запроса
+  console.log(clientId); // Проверяем, что идентификатор успешно извлечен
+
+  try {
+    // Используйте метод findByIdAndDelete для удаления клиента по идентификатору
+    const deletedClient = await Buyer.findByIdAndDelete(clientId);
+
+    if (!deletedClient) {
+      res.status(404).json({ error: 'Клиент не найден' });
+      return;
+    }
+
+    res.json({ message: 'Клиент успешно удален', deletedClient });
+  } catch (error) {
+    console.error('Ошибка при удалении клиента:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.delete('/api/deleteProduct', async (req, res) => {
+  const clientId = req.body._id; // Извлекаем идентификатор клиента из тела запроса
+  console.log(clientId); // Проверяем, что идентификатор успешно извлечен
+
+  try {
+    // Используйте метод findByIdAndDelete для удаления клиента по идентификатору
+    const deletedClient = await Product.findByIdAndDelete(clientId);
+
+    if (!deletedClient) {
+      res.status(404).json({ error: 'Клиент не найден' });
+      return;
+    }
+
+    res.json({ message: 'Клиент успешно удален', deletedClient });
+  } catch (error) {
+    console.error('Ошибка при удалении клиента:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
